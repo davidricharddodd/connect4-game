@@ -1,0 +1,341 @@
+### /Users/daviddodd/connect4.html
+```html
+1: <!DOCTYPE html>
+2: <html lang="en">
+3: <head>
+4:     <meta charset="UTF-8">
+5:     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+6:     <title>Connect 4 Game</title>
+7:     <style>
+8:         * {
+9:             margin: 0;
+10:             padding: 0;
+11:             box-sizing: border-box;
+12:         }
+13: 
+14:         body {
+15:             font-family: 'Arial', sans-serif;
+16:             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+17:             min-height: 100vh;
+18:             display: flex;
+19:             justify-content: center;
+20:             align-items: center;
+21:             padding: 20px;
+22:         }
+23: 
+24:         .game-container {
+25:             text-align: center;
+26:             background: white;
+27:             padding: 30px;
+28:             border-radius: 20px;
+29:             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+30:         }
+31: 
+32:         h1 {
+33:             color: #333;
+34:             margin-bottom: 20px;
+35:             font-size: 2.5em;
+36:             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+37:         }
+38: 
+39:         .status {
+40:             font-size: 1.5em;
+41:             margin-bottom: 20px;
+42:             height: 40px;
+43:             font-weight: bold;
+44:             color: #555;
+45:         }
+46: 
+47:         .current-player {
+48:             display: inline-block;
+49:             width: 30px;
+50:             height: 30px;
+51:             border-radius: 50%;
+52:             vertical-align: middle;
+53:             margin-left: 10px;
+54:             border: 3px solid #333;
+55:         }
+56: 
+57:         .board {
+58:             display: inline-block;
+59:             background: #2563eb;
+60:             padding: 15px;
+61:             border-radius: 15px;
+62:             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+63:         }
+64: 
+65:         .row {
+66:             display: flex;
+67:             gap: 10px;
+68:             margin-bottom: 10px;
+69:         }
+70: 
+71:         .row:last-child {
+72:             margin-bottom: 0;
+73:         }
+74: 
+75:         .cell {
+76:             width: 70px;
+77:             height: 70px;
+78:             background: white;
+79:             border-radius: 50%;
+80:             cursor: pointer;
+81:             transition: all 0.3s ease;
+82:             position: relative;
+83:             box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.1);
+84:         }
+85: 
+86:         .cell:hover {
+87:             transform: scale(1.05);
+88:             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+89:         }
+90: 
+91:         .cell.red {
+92:             background: radial-gradient(circle at 30% 30%, #ff6b6b, #c92a2a);
+93:             box-shadow: 0 4px 8px rgba(201, 42, 42, 0.4);
+94:             animation: drop 0.5s ease;
+95:         }
+96: 
+97:         .cell.yellow {
+98:             background: radial-gradient(circle at 30% 30%, #ffd93d, #f5a623);
+99:             box-shadow: 0 4px 8px rgba(245, 166, 35, 0.4);
+100:             animation: drop 0.5s ease;
+101:         }
+102: 
+103:         .cell.winning {
+104:             animation: winning-pulse 1s ease-in-out infinite;
+105:         }
+106: 
+107:         @keyframes drop {
+108:             0% {
+109:                 transform: translateY(-500px);
+110:                 opacity: 0;
+111:             }
+112:             60% {
+113:                 transform: translateY(10px);
+114:             }
+115:             80% {
+116:                 transform: translateY(-5px);
+117:             }
+118:             100% {
+119:                 transform: translateY(0);
+120:                 opacity: 1;
+121:             }
+122:         }
+123: 
+124:         @keyframes winning-pulse {
+125:             0%, 100% {
+126:                 transform: scale(1);
+127:                 box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+128:             }
+129:             50% {
+130:                 transform: scale(1.1);
+131:                 box-shadow: 0 0 40px rgba(255, 215, 0, 1);
+132:             }
+133:         }
+134: 
+135:         .controls {
+136:             margin-top: 30px;
+137:         }
+138: 
+139:         button {
+140:             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+141:             color: white;
+142:             border: none;
+143:             padding: 15px 40px;
+144:             font-size: 1.2em;
+145:             border-radius: 50px;
+146:             cursor: pointer;
+147:             transition: all 0.3s ease;
+148:             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+149:             font-weight: bold;
+150:         }
+151: 
+152:         button:hover {
+153:             transform: translateY(-2px);
+154:             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+155:         }
+156: 
+157:         button:active {
+158:             transform: translateY(0);
+159:         }
+160: 
+161:         .winner-message {
+162:             font-size: 1.8em;
+163:             color: #2ecc71;
+164:             font-weight: bold;
+165:             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+166:         }
+167:     </style>
+168: </head>
+169: <body>
+170:     <div class="game-container">
+171:         <h1>🎮 Connect 4</h1>
+172:         <div class="status" id="status">
+173:             Current Player: <span class="current-player red"></span>
+174:         </div>
+175:         <div class="board" id="board"></div>
+176:         <div class="controls">
+177:             <button id="resetBtn">New Game</button>
+178:         </div>
+179:     </div>
+180: 
+181:     <script>
+182:         class Connect4 {
+183:             constructor() {
+184:                 this.rows = 6;
+185:                 this.cols = 7;
+186:                 this.board = Array(this.rows).fill(null).map(() => Array(this.cols).fill(null));
+187:                 this.currentPlayer = 'red';
+188:                 this.gameOver = false;
+189:                 this.winningCells = [];
+190:                 this.initBoard();
+191:                 this.updateStatus();
+192:             }
+193: 
+194:             initBoard() {
+195:                 const boardElement = document.getElementById('board');
+196:                 boardElement.innerHTML = '';
+197:                 
+198:                 for (let row = 0; row < this.rows; row++) {
+199:                     const rowDiv = document.createElement('div');
+200:                     rowDiv.className = 'row';
+201:                     
+202:                     for (let col = 0; col < this.cols; col++) {
+203:                         const cell = document.createElement('div');
+204:                         cell.className = 'cell';
+205:                         cell.dataset.row = row;
+206:                         cell.dataset.col = col;
+207:                         cell.addEventListener('click', () => this.handleClick(col));
+208:                         rowDiv.appendChild(cell);
+209:                     }
+210:                     
+211:                     boardElement.appendChild(rowDiv);
+212:                 }
+213:             }
+214: 
+215:             handleClick(col) {
+216:                 if (this.gameOver) return;
+217: 
+218:                 const row = this.getLowestEmptyRow(col);
+219:                 if (row === -1) return; // Column is full
+220: 
+221:                 this.board[row][col] = this.currentPlayer;
+222:                 this.updateCell(row, col);
+223: 
+224:                 if (this.checkWin(row, col)) {
+225:                     this.gameOver = true;
+226:                     this.highlightWinningCells();
+227:                     this.updateStatus(`🎉 ${this.currentPlayer.toUpperCase()} WINS! 🎉`);
+228:                 } else if (this.isBoardFull()) {
+229:                     this.gameOver = true;
+230:                     this.updateStatus("🤝 It's a Draw!");
+231:                 } else {
+232:                     this.currentPlayer = this.currentPlayer === 'red' ? 'yellow' : 'red';
+233:                     this.updateStatus();
+234:                 }
+235:             }
+236: 
+237:             getLowestEmptyRow(col) {
+238:                 for (let row = this.rows - 1; row >= 0; row--) {
+239:                     if (this.board[row][col] === null) {
+240:                         return row;
+241:                     }
+242:                 }
+243:                 return -1;
+244:             }
+245: 
+246:             updateCell(row, col) {
+247:                 const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+248:                 cell.classList.add(this.currentPlayer);
+249:             }
+250: 
+251:             checkWin(row, col) {
+252:                 return this.checkDirection(row, col, 0, 1) ||  // Horizontal
+253:                        this.checkDirection(row, col, 1, 0) ||  // Vertical
+254:                        this.checkDirection(row, col, 1, 1) ||  // Diagonal /
+255:                        this.checkDirection(row, col, 1, -1);   // Diagonal \
+256:             }
+257: 
+258:             checkDirection(row, col, deltaRow, deltaCol) {
+259:                 const player = this.board[row][col];
+260:                 let count = 1;
+261:                 let cells = [[row, col]];
+262: 
+263:                 // Check positive direction
+264:                 for (let i = 1; i < 4; i++) {
+265:                     const newRow = row + (deltaRow * i);
+266:                     const newCol = col + (deltaCol * i);
+267:                     if (this.isValidCell(newRow, newCol) && this.board[newRow][newCol] === player) {
+268:                         count++;
+269:                         cells.push([newRow, newCol]);
+270:                     } else {
+271:                         break;
+272:                     }
+273:                 }
+274: 
+275:                 // Check negative direction
+276:                 for (let i = 1; i < 4; i++) {
+277:                     const newRow = row - (deltaRow * i);
+278:                     const newCol = col - (deltaCol * i);
+279:                     if (this.isValidCell(newRow, newCol) && this.board[newRow][newCol] === player) {
+280:                         count++;
+281:                         cells.push([newRow, newCol]);
+282:                     } else {
+283:                         break;
+284:                     }
+285:                 }
+286: 
+287:                 if (count >= 4) {
+288:                     this.winningCells = cells;
+289:                     return true;
+290:                 }
+291:                 return false;
+292:             }
+293: 
+294:             isValidCell(row, col) {
+295:                 return row >= 0 && row < this.rows && col >= 0 && col < this.cols;
+296:             }
+297: 
+298:             isBoardFull() {
+299:                 return this.board[0].every(cell => cell !== null);
+300:             }
+301: 
+302:             highlightWinningCells() {
+303:                 this.winningCells.forEach(([row, col]) => {
+304:                     const cell = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+305:                     cell.classList.add('winning');
+306:                 });
+307:             }
+308: 
+309:             updateStatus(message = null) {
+310:                 const statusElement = document.getElementById('status');
+311:                 if (message) {
+312:                     statusElement.innerHTML = `<span class="winner-message">${message}</span>`;
+313:                 } else {
+314:                     const colorClass = this.currentPlayer;
+315:                     statusElement.innerHTML = `Current Player: <span class="current-player ${colorClass}"></span>`;
+316:                 }
+317:             }
+318: 
+319:             reset() {
+320:                 this.board = Array(this.rows).fill(null).map(() => Array(this.cols).fill(null));
+321:                 this.currentPlayer = 'red';
+322:                 this.gameOver = false;
+323:                 this.winningCells = [];
+324:                 this.initBoard();
+325:                 this.updateStatus();
+326:             }
+327:         }
+328: 
+329:         // Initialize game
+330:         let game = new Connect4();
+331: 
+332:         // Reset button
+333:         document.getElementById('resetBtn').addEventListener('click', () => {
+334:             game.reset();
+335:         });
+336:     </script>
+337: </body>
+338: </html>
+```
